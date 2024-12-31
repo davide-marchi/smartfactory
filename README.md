@@ -58,11 +58,13 @@ To get started with SmartFactory, follow these steps:
    ```bash
    cd smartfactory
    ```
-3. Spin up using Docker:
+3. Insert smart_app_data.pkl inside smartfactory/database/druid/upload
+4. Insert .env with keys inside smartfactory/rag
+5. Spin up using Docker:
    ```bash
    docker compose up --profile "*" -d
    ```
-4. SmartFactory GUI will be available at `http://localhost:10060`.
+6. SmartFactory GUI will be available at `http://localhost:10060`.
 
 ## Contributing
 
