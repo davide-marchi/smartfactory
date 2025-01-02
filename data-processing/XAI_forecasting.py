@@ -33,6 +33,10 @@ class ForecastExplainer:
 
         Raises:
             ValueError: If use_residuals is True but training_outputs is None.
+
+        Note:
+            This method also initializes SHAP explainer and calculates global SHAP values for the training data,
+            which are stored in self.global_shap_values for later use in explanations.
         """
         # Check if training_outputs is provided when use_residuals is True
         if use_residuals and training_outputs is None:
@@ -308,12 +312,6 @@ class ForecastExplainer:
                                           predictions as final prediction; else use raw prediction. 
                                           Has no effect in residuals mode. Default is False.
 
-        Globals:
-            None
-
-        Raises:
-            None
-
         Returns:
             dict: A dictionary containing:
                 'Predicted_value' (List[float]): List of predicted values.
@@ -322,6 +320,7 @@ class ForecastExplainer:
                 'Confidence_score' (List[float]): List of confidence levels used.
                 'Lime_explaination' (List[List[Tuple[str,float]]]): LIME explanations per step.
                 'Date_prediction' (List[str]): Predicted date labels for each step.
+                'Global_SHAP_values' (np.ndarray): Global SHAP values calculated during initialization.
         """
         if isinstance(input_data, torch.Tensor):
             input_data = input_data.detach().cpu().numpy()
