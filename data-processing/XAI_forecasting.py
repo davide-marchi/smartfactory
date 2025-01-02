@@ -8,6 +8,7 @@ import random
 from datetime import datetime, timedelta
 import xgboost as xgb
 import time
+import shap
 
 class ForecastExplainer:
     def __init__(
@@ -57,6 +58,21 @@ class ForecastExplainer:
         else:
             # Pre-calculate training data std for bootstrap mode
             self.training_std = np.std(self.training_data)
+
+        # Initialize SHAP explainer and calculate global SHAP values
+        if isinstance(self.model, nn.Module):
+            # For PyTorch models, create a wrapper function
+            def model_predict(x):
+                x_tensor = torch.from_numpy(x.reshape(-1, self.seq_length, 1)).float().to(self.device)
+                with torch.no_grad():
+                    return self.model(x_tensor).cpu().numpy()
+            self.shap_explainer = shap.KernelExplainer(model_predict, self.training_data)
+        else:
+            # For sklearn/xgboost models
+            self.shap_explainer = shap.TreeExplainer(self.model)
+        
+        # Calculate global SHAP values
+        self.global_shap_values = self.shap_explainer.shap_values(self.training_data)
 
     def calculate_residuals(self) -> np.ndarray:
         """
@@ -353,7 +369,8 @@ class ForecastExplainer:
             'Upper_bound': upper_bounds,
             'Confidence_score': confidence_scores,
             'Lime_explaination': lime_explanations,
-            'Date_prediction': date_predictions
+            'Date_prediction': date_predictions,
+            'Global_SHAP_values': self.global_shap_values
         }
 
         return out_dict
@@ -466,6 +483,13 @@ def main():
 
     plt.tight_layout()  # Adjust spacing between subplots
     plt.show()
+
+    # Plot SHAP summary plot for global feature importance
+    plt.figure(figsize=(10, 6))
+    shap.summary_plot(
+        results_bootstrap['Global_SHAP_values'],
+        X_train
+    )
 
     print(f"Time taken (Bootstrap Mode): {end_time_bootstrap - start_time_bootstrap:.2f} seconds")
     print(f"Time taken (Residuals Mode): {end_time_residuals - start_time_residuals:.2f} seconds")
