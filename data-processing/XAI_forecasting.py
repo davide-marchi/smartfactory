@@ -221,7 +221,46 @@ class ForecastExplainer:
         return mean_pred, lower_bound, upper_bound, confidence
 
 
-    def explain_prediction(
+    def explain_prediction_lime(
+        self,
+        input_data: np.ndarray,
+        input_labels: List[str],
+        num_features: int = 10
+    ) -> List[Tuple[str, float]]:
+        """
+        Generate a LIME explanation for the model's prediction on input_data.
+        """
+        input_data_flat = input_data.flatten()
+
+        def predict_fn(data):
+            batch_size = data.shape[0]
+            if isinstance(self.model, nn.Module):
+                inputs = data.reshape(batch_size, self.seq_length, 1)
+                inputs_tensor = torch.from_numpy(inputs).float().to(self.device)
+                self.model.eval()
+                with torch.no_grad():
+                    outputs = self.model(inputs_tensor).cpu().numpy()
+            else:
+                outputs = self.model.predict(data)
+            return outputs.flatten()
+
+        explainer = LimeTabularExplainer(
+            training_data=self.training_data,
+            feature_names=input_labels,
+            mode='regression',
+            verbose=False
+        )
+
+        exp = explainer.explain_instance(
+            input_data_flat,
+            predict_fn,
+            num_features=num_features,
+            num_samples=1000
+        )
+
+        return exp.as_list()
+
+    def explain_prediction_shap(
         self,
         input_data: np.ndarray,
         input_labels: List[str],
@@ -229,30 +268,14 @@ class ForecastExplainer:
     ) -> List[Tuple[str, float]]:
         """
         Generate a SHAP explanation for the model's prediction on input_data.
-        Uses the pre-initialized SHAP explainer for efficient local explanations.
-
-        Args:
-            input_data (np.ndarray): Input data of shape (seq_length,).
-            input_labels (List[str]): Labels corresponding to each step in input_data.
-            num_features (int, optional): Number of top features to include in the explanation.
-
-        Returns:
-            List[Tuple[str, float]]: A list of (feature_label, importance) pairs.
         """
-        # Reshape input data for SHAP
         input_data_reshaped = input_data.reshape(1, -1)
-        
-        # Get SHAP values for this prediction
         shap_values = self.shap_explainer.shap_values(input_data_reshaped)
         
         if isinstance(shap_values, list):
-            # For multi-output models, take the first output
             shap_values = shap_values[0]
         
-        # Create feature importance pairs
         feature_importance = list(zip(input_labels, shap_values[0]))
-        
-        # Sort by absolute importance and take top num_features
         sorted_importance = sorted(feature_importance, 
                                  key=lambda x: abs(x[1]), 
                                  reverse=True)[:num_features]
@@ -267,7 +290,8 @@ class ForecastExplainer:
         num_features: int = 5,
         confidence: float = 0.95,
         n_samples: int = 100,
-        use_mean_pred: bool = False
+        use_mean_pred: bool = False,
+        use_shap: bool = False
     ) -> dict:
         """
         Perform autoregressive prediction and explanation for n_predictions steps.
@@ -290,6 +314,8 @@ class ForecastExplainer:
             use_mean_pred (bool, optional): If True and in bootstrap mode, use mean of bootstrap 
                                           predictions as final prediction; else use raw prediction. 
                                           Has no effect in residuals mode. Default is False.
+            use_shap (bool, optional): If True, use SHAP for local explanations. 
+                                     If False, use LIME. Default is False.
 
         Returns:
             dict: A dictionary containing:
@@ -297,7 +323,8 @@ class ForecastExplainer:
                 'Lower_bound' (List[float]): List of lower bounds.
                 'Upper_bound' (List[float]): List of upper bounds.
                 'Confidence_score' (List[float]): List of confidence levels used.
-                'SHAP_explanation' (List[List[Tuple[str,float]]]): SHAP explanations per step.
+                'Local_explanation' (List[List[Tuple[str,float]]]): Local explanations per step 
+                                                                   (using either LIME or SHAP).
                 'Date_prediction' (List[str]): Predicted date labels for each step.
                 'Global_SHAP_values' (np.ndarray): Global SHAP values calculated during initialization.
         """
@@ -325,7 +352,10 @@ class ForecastExplainer:
             # Decide which prediction to use
             final_pred = mean_pred if use_mean_pred else raw_pred
 
-            explanation = self.explain_prediction(current_input, current_labels, num_features=num_features)
+            # Choose explanation method based on use_shap parameter
+            explanation = (self.explain_prediction_shap(current_input, current_labels, num_features) 
+                         if use_shap else 
+                         self.explain_prediction_lime(current_input, current_labels, num_features))
 
             predicted_values.append(final_pred)
             lower_bounds.append(lower_bound)
@@ -346,7 +376,7 @@ class ForecastExplainer:
             'Lower_bound': lower_bounds,
             'Upper_bound': upper_bounds,
             'Confidence_score': confidence_scores,
-            'SHAP_explanation': lime_explanations,  # Renamed from 'Lime_explanation'
+            'Local_explanation': lime_explanations,  # Renamed to be method-agnostic
             'Date_prediction': date_predictions,
             'Global_SHAP_values': self.global_shap_values
         }
@@ -414,7 +444,8 @@ def main():
         num_features=5,
         confidence=0.95,
         n_samples=100,
-        use_mean_pred=False
+        use_mean_pred=False,
+        use_shap=True
     )
     end_time_bootstrap = time.time()
 
@@ -428,7 +459,8 @@ def main():
         num_features=5,
         confidence=0.95,
         n_samples=100,
-        use_mean_pred=False
+        use_mean_pred=False,
+        use_shap=True
     )
     end_time_residuals = time.time()
 
