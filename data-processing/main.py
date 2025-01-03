@@ -195,6 +195,7 @@ def predict(JSONS: Json_in, api_key: str = Depends(get_verify_api_key(["ai-agent
                                 json_out_el.Upper_bound = result['Upper_bound']
                                 json_out_el.Measure_unit = KPI_data["unit_measure"]
                                 json_out_el.Confidence_score = result['Confidence_score']
+                                json_out_el.Global_SHAP_values = result['Global_SHAP_values']
 
                                 Lime_exp = []
                                 for exp in result['Local_explanation']:

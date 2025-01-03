@@ -35,6 +35,8 @@ class Json_out_el(BaseModel):
     Date_prediction (list[str]) date of the corresponding prediction
     Error_message (str): in case of error its description will be here
     Forecast (bool): forecast identifier
+    Global_SHAP_values (Optional[List[List[float]]]): Matrix of shape (n_samples, n_features) containing
+        global SHAP values for feature importance across all training samples
     """
     Machine_Name: str
     KPI_Name: str
@@ -47,6 +49,7 @@ class Json_out_el(BaseModel):
     Date_prediction: List[str]
     Error_message: str
     Forecast: bool
+    Global_SHAP_values: Optional[List[List[float]]] = None
 
 class Json_out(BaseModel):
     value: List[Json_out_el]
