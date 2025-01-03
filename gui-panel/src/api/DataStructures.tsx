@@ -422,8 +422,13 @@ export class ForecastDataEx {
     measureUnit: string
     datePrediction: string[]
     forecast: boolean
+    globalShapValues: number[][] // new field
 
-    constructor(machineName: string, kpiName: string, predictedValue: number[], lowerBound: number[], upperBound: number[], confidenceScore: number[], limeExplanation: LimeData[][], measureUnit: string, datePrediction: string[], forecast: boolean) {
+    constructor(machineName: string, kpiName: string, predictedValue: number[], 
+                lowerBound: number[], upperBound: number[], confidenceScore: number[], 
+                limeExplanation: LimeData[][], measureUnit: string, 
+                datePrediction: string[], forecast: boolean, 
+                globalShapValues: number[][]) { // updated constructor
         this.machineName = machineName;
         this.kpiName = kpiName;
         this.predictedValue = predictedValue;
@@ -434,6 +439,7 @@ export class ForecastDataEx {
         this.measureUnit = measureUnit;
         this.datePrediction = datePrediction;
         this.forecast = forecast;
+        this.globalShapValues = globalShapValues;
     }
 
     toChartData(): {
@@ -486,7 +492,10 @@ export class ForecastDataEx {
         if (typeof json.Forecast !== "boolean") {
             throw new Error("Invalid type for Forecast");
         }
+        if (!Array.isArray(json.Global_SHAP_values)) {
+            throw new Error("Invalid type for Global_SHAP_values");
+        }
 
-        return new ForecastDataEx(json.Machine_Name, json.KPI_Name, json.Predicted_value, json.Lower_bound, json.Upper_bound, json.Confidence_score, json.Lime_explaination.map(LimeData.decodeArray), json.Measure_unit, json.Date_prediction, json.Forecast);
+        return new ForecastDataEx(json.Machine_Name, json.KPI_Name, json.Predicted_value, json.Lower_bound, json.Upper_bound, json.Confidence_score, json.Lime_explaination.map(LimeData.decodeArray), json.Measure_unit, json.Date_prediction, json.Forecast, json.Global_SHAP_values || []);
     }
 }

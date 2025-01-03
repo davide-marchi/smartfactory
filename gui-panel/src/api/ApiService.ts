@@ -369,7 +369,7 @@ export const getForecastData = async (request: ForecastRequest): Promise<Forecas
         );
         if (!response.data || !Array.isArray(response.data.value) || response.data.value.length === 0) {
             console.log("No forecast data available in the response.");
-            return new ForecastDataEx(request.Machine_Name, request.KPI_Name, [], [], [], [], [], "", [], true);
+            return new ForecastDataEx(request.Machine_Name, request.KPI_Name, [], [], [], [], [], "", [], true, []);
         }
         return ForecastDataEx.decode(response.data.value[0]);
     } catch (error: any) {
@@ -377,7 +377,6 @@ export const getForecastData = async (request: ForecastRequest): Promise<Forecas
         throw new Error(error.response?.data?.message || 'Failed to retrieve forecast data');
     }
 }
-
 
 /**
  * API POST used to update user settings

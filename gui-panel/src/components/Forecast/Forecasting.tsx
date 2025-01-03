@@ -41,16 +41,10 @@ const ForecastingPage: React.FC = () => {
                     Date_prediction: numberOfDays
                 }).catch((error) => {
                     console.error('Failed to fetch future data:', error);
-                    return new ForecastDataEx(selectedMachine.machineId,
+                    return new ForecastDataEx(
+                        selectedMachine.machineId,
                         selectedKpi.id,
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        "",
-                        [],
-                        true
+                        [], [], [], [], [], "", [], true, [] // Added empty array for globalShapValues
                     );
                 });
                 console.log("Future data received for the next %s days: ", numberOfDays, futureData);
