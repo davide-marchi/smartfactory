@@ -228,36 +228,57 @@ class ForecastExplainer:
         num_features: int = 10
     ) -> List[Tuple[str, float]]:
         """
-        Generate a SHAP explanation for the model's prediction on input_data.
-        Uses the pre-initialized SHAP explainer for efficient local explanations.
+        Generate a LIME explanation for the model's prediction on input_data.
+
+        A new LimeTabularExplainer is instantiated dynamically with updated feature names
+        corresponding to the current input sequence.
 
         Args:
             input_data (np.ndarray): Input data of shape (seq_length,).
             input_labels (List[str]): Labels corresponding to each step in input_data.
-            num_features (int, optional): Number of top features to include in the explanation.
+            num_features (int, optional): Number of features to include in the explanation. Default is 10.
+
+        Globals:
+            None
+
+        Raises:
+            None
 
         Returns:
             List[Tuple[str, float]]: A list of (feature_label, importance) pairs.
         """
-        # Reshape input data for SHAP
-        input_data_reshaped = input_data.reshape(1, -1)
-        
-        # Get SHAP values for this prediction
-        shap_values = self.shap_explainer.shap_values(input_data_reshaped)
-        
-        if isinstance(shap_values, list):
-            # For multi-output models, take the first output
-            shap_values = shap_values[0]
-        
-        # Create feature importance pairs
-        feature_importance = list(zip(input_labels, shap_values[0]))
-        
-        # Sort by absolute importance and take top num_features
-        sorted_importance = sorted(feature_importance, 
-                                 key=lambda x: abs(x[1]), 
-                                 reverse=True)[:num_features]
-        
-        return sorted_importance
+        input_data_flat = input_data.flatten()
+
+        def predict_fn(data):
+            batch_size = data.shape[0]
+            if isinstance(self.model, nn.Module):
+                # For PyTorch models, reshape to (batch, seq_length, 1)
+                inputs = data.reshape(batch_size, self.seq_length, 1)
+                inputs_tensor = torch.from_numpy(inputs).float().to(self.device)
+                self.model.eval()
+                with torch.no_grad():
+                    outputs = self.model(inputs_tensor).cpu().numpy()
+            else:
+                outputs = self.model.predict(data)
+            return outputs.flatten()
+
+        # Instantiate a new LimeTabularExplainer for the current labels
+        explainer = LimeTabularExplainer(
+            training_data=self.training_data,
+            feature_names=input_labels,  # Use the current labels directly
+            mode='regression',
+            verbose=False
+        )
+
+        exp = explainer.explain_instance(
+            input_data_flat,
+            predict_fn,
+            num_features=num_features,
+            num_samples=1000
+        )
+
+        explanation = exp.as_list()
+        return explanation
 
     def predict_and_explain(
         self,
@@ -297,7 +318,7 @@ class ForecastExplainer:
                 'Lower_bound' (List[float]): List of lower bounds.
                 'Upper_bound' (List[float]): List of upper bounds.
                 'Confidence_score' (List[float]): List of confidence levels used.
-                'SHAP_explanation' (List[List[Tuple[str,float]]]): SHAP explanations per step.
+                'Lime_explaination' (List[List[Tuple[str,float]]]): LIME explanations per step.
                 'Date_prediction' (List[str]): Predicted date labels for each step.
                 'Global_SHAP_values' (np.ndarray): Global SHAP values calculated during initialization.
         """
@@ -346,7 +367,7 @@ class ForecastExplainer:
             'Lower_bound': lower_bounds,
             'Upper_bound': upper_bounds,
             'Confidence_score': confidence_scores,
-            'SHAP_explanation': lime_explanations,  # Renamed from 'Lime_explanation'
+            'Lime_explaination': lime_explanations,
             'Date_prediction': date_predictions,
             'Global_SHAP_values': self.global_shap_values
         }
