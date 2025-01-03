@@ -8,7 +8,6 @@ import random
 from datetime import datetime, timedelta
 import xgboost as xgb
 import time
-import shap
 
 class ForecastExplainer:
     def __init__(
@@ -33,10 +32,6 @@ class ForecastExplainer:
 
         Raises:
             ValueError: If use_residuals is True but training_outputs is None.
-
-        Note:
-            This method also initializes SHAP explainer and calculates global SHAP values for the training data,
-            which are stored in self.global_shap_values for later use in explanations.
         """
         # Check if training_outputs is provided when use_residuals is True
         if use_residuals and training_outputs is None:
@@ -62,21 +57,6 @@ class ForecastExplainer:
         else:
             # Pre-calculate training data std for bootstrap mode
             self.training_std = np.std(self.training_data)
-
-        # Initialize SHAP explainer and calculate global SHAP values
-        if isinstance(self.model, nn.Module):
-            # For PyTorch models, create a wrapper function
-            def model_predict(x):
-                x_tensor = torch.from_numpy(x.reshape(-1, self.seq_length, 1)).float().to(self.device)
-                with torch.no_grad():
-                    return self.model(x_tensor).cpu().numpy()
-            self.shap_explainer = shap.KernelExplainer(model_predict, self.training_data)
-        else:
-            # For sklearn/xgboost models
-            self.shap_explainer = shap.TreeExplainer(self.model)
-        
-        # Calculate global SHAP values
-        self.global_shap_values = self.shap_explainer.shap_values(self.training_data)
 
     def calculate_residuals(self) -> np.ndarray:
         """
@@ -312,6 +292,12 @@ class ForecastExplainer:
                                           predictions as final prediction; else use raw prediction. 
                                           Has no effect in residuals mode. Default is False.
 
+        Globals:
+            None
+
+        Raises:
+            None
+
         Returns:
             dict: A dictionary containing:
                 'Predicted_value' (List[float]): List of predicted values.
@@ -320,7 +306,6 @@ class ForecastExplainer:
                 'Confidence_score' (List[float]): List of confidence levels used.
                 'Lime_explaination' (List[List[Tuple[str,float]]]): LIME explanations per step.
                 'Date_prediction' (List[str]): Predicted date labels for each step.
-                'Global_SHAP_values' (np.ndarray): Global SHAP values calculated during initialization.
         """
         if isinstance(input_data, torch.Tensor):
             input_data = input_data.detach().cpu().numpy()
@@ -368,8 +353,7 @@ class ForecastExplainer:
             'Upper_bound': upper_bounds,
             'Confidence_score': confidence_scores,
             'Lime_explaination': lime_explanations,
-            'Date_prediction': date_predictions,
-            'Global_SHAP_values': self.global_shap_values
+            'Date_prediction': date_predictions
         }
 
         return out_dict
@@ -399,7 +383,7 @@ def main():
 
     # Generate a sine wave
     total_points = 300
-    seq_length = 50
+    seq_length = 9
     t = np.linspace(0, 10 * np.pi, total_points)
     data = np.sin(t) + np.random.normal(0, 0.05, size=total_points)
 
@@ -418,7 +402,7 @@ def main():
     model.fit(X_train, y_train)
 
     # Perform predictions beyond the training range
-    n_predictions = 20
+    n_predictions = 30
     input_data = data[(total_points - seq_length - n_predictions): (total_points - n_predictions)]
 
     # Generate labels for the input_data
@@ -482,13 +466,6 @@ def main():
 
     plt.tight_layout()  # Adjust spacing between subplots
     plt.show()
-
-    # Plot SHAP summary plot for global feature importance
-    plt.figure(figsize=(10, 6))
-    shap.summary_plot(
-        results_bootstrap['Global_SHAP_values'],
-        X_train
-    )
 
     print(f"Time taken (Bootstrap Mode): {end_time_bootstrap - start_time_bootstrap:.2f} seconds")
     print(f"Time taken (Residuals Mode): {end_time_residuals - start_time_residuals:.2f} seconds")

@@ -1,0 +1,10 @@
+Sequence lenght:    9
+predictions:        30
+
+Before:
+    Bootstrapping-LIME: 1.70 seconds
+    Residuals-LIME:     1.62 seconds
+
+After:
+    Bootstrapping-SHAP: 0.17 seconds
+    Residuals-SHAP:     0.15 seconds

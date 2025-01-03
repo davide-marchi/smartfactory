@@ -378,7 +378,7 @@ def main():
 
     # Generate a sine wave
     total_points = 300
-    seq_length = 50
+    seq_length = 9
     t = np.linspace(0, 10 * np.pi, total_points)
     data = np.sin(t) + np.random.normal(0, 0.05, size=total_points)
 
@@ -397,7 +397,7 @@ def main():
     model.fit(X_train, y_train)
 
     # Perform predictions beyond the training range
-    n_predictions = 20
+    n_predictions = 30
     input_data = data[(total_points - seq_length - n_predictions): (total_points - n_predictions)]
 
     # Generate labels for the input_data
