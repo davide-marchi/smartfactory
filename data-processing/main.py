@@ -197,7 +197,7 @@ def predict(JSONS: Json_in, api_key: str = Depends(get_verify_api_key(["ai-agent
                                 json_out_el.Confidence_score = result['Confidence_score']
 
                                 Lime_exp = []
-                                for exp in result['Lime_explaination']:
+                                for exp in result['Local_explaination']:
                                     Lime_exp.append([LimeExplainationItem(date_info=item[0], value=item[1]) for item in exp])
                                 json_out_el.Lime_explaination = Lime_exp
                                 json_out_el.Date_prediction = result['Date_prediction']  
