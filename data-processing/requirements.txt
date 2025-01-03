@@ -10,6 +10,7 @@ tqdm
 xgboost
 aix360
 lime
+shap
 minio
 python-dotenv
 
