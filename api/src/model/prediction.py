@@ -24,15 +24,18 @@ class Json_out_el(BaseModel):
     """
     The output of a prediction
 
-    Machine_Name (str) and KPI_name are the identifiers for the predicted series
+    Machine_Name (str) and KPI_Name are the identifiers for the predicted series
     Predicted_value (List[flaot]): the list of the results
     Lower_bound, Upper_bound & confidence_score (List[float]): 
         each prediction has a "confidence_score chance to fall between "Lower_bound" and "Upper_bound"
-    Lime_explaination (List[float]): explaination of which components influenced more the answer
+    Lime_explaination (List[List[LimeExplainationItem]]): explaination of which components influence
+      more the answer. For every prediction a list of (str,float) tuples are returned
     Measure_unit (str) the KPI's unit of measure
     Date_prediction (list[str]) date of the corresponding prediction
     Error_message (str): in case of error its description will be here
     Forecast (bool): forecast identifier
+    Global_SHAP_values (Optional[List[List[float]]]): Matrix of shape (n_samples, n_features) containing
+        global SHAP values for feature importance across all training samples
     """
     Machine_Name: str
     KPI_Name: str
@@ -45,6 +48,7 @@ class Json_out_el(BaseModel):
     Date_prediction: List[str]
     Error_message: str
     Forecast: bool
+    Global_SHAP_values: Optional[List[List[float]]] = None
 
 class Json_out(BaseModel):
     value: List[Json_out_el]

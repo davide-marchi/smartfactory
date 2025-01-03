@@ -147,6 +147,7 @@ def predict(JSONS: Json_in, api_key: str = Depends(get_verify_api_key(["ai-agent
         Measure_unit: str -> unit of the KPI
         Date_prediction: List[str] -> list of dates regarding the predicted values
         Forecast: bool
+        Global_SHAP_values: Optional[List[List[float]] -> global SHAP values for feature importance
     """
     out_dicts = []
     if len(JSONS.value) != 0:
@@ -166,7 +167,8 @@ def predict(JSONS: Json_in, api_key: str = Depends(get_verify_api_key(["ai-agent
                 Measure_unit="",
                 Date_prediction=[],
                 Error_message="",
-                Forecast=True
+                Forecast=True,
+                Global_SHAP_values=[]
             )
             if json_in.Date_prediction is not None:
 
@@ -233,7 +235,8 @@ def predict(JSONS: Json_in, api_key: str = Depends(get_verify_api_key(["ai-agent
         Measure_unit="",
         Date_prediction=[],
         Error_message="Received input is not valid",
-        Forecast=True)
+        Forecast=True,
+        Global_SHAP_values=[])
 
         out_dicts.append(json_out_el)
         
