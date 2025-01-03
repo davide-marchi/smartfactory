@@ -8,3 +8,8 @@ Before:
 After:
     Bootstrapping-SHAP: 0.17 seconds
     Residuals-SHAP:     0.15 seconds
+
+On website:
+    Bootstrapping-LIME: 4.60 seconds
+    Residuals-LIME:     4.42 seconds
+    Residuals-SHAP:     0.76 seconds

@@ -592,7 +592,12 @@ def XAI_PRED(data,Last_date, model, total_points, seq_length = 10, n_predictions
   input_labels = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(seq_length)]
 
   # Initialize the explainer
-  explainer = ForecastExplainer(model, X_train)
+  explainer = ForecastExplainer(
+      model=model,
+      training_data=X_train,
+      training_outputs=y_train,
+      use_residuals=True
+    )
 
   # Perform autoregressive predictions
   results = explainer.predict_and_explain(
@@ -601,8 +606,7 @@ def XAI_PRED(data,Last_date, model, total_points, seq_length = 10, n_predictions
       input_labels=input_labels,
       num_features=5,
       confidence=0.95,
-      n_samples=100,
-      use_mean_pred=True
+      use_shap=True
   )
   return results
 
