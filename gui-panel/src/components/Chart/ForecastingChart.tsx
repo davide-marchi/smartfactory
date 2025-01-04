@@ -142,6 +142,19 @@ const ForeChart: React.FC<ForeChartProps> = ({
         numericTimestamp: new Date(d.timestamp).getTime(),
     }));
     console.log("Data:", data);
+
+    // Initialize flattenedShapData to an empty array before checking globalShapValues.
+    var flattenedShapData: { x: number; y: number }[] = [];
+    if (futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0) {
+        // For each row (feature), loop over each column (day)
+        flattenedShapData = futureDataEx.globalShapValues.flatMap((featureRow, rowIndex) =>
+            featureRow.map((shapVal, colIndex) => ({
+                x: shapVal,
+                y: colIndex
+            }))
+        );
+    }
+
     return <div>
         {/* Forecasting Chart */}
         <ResponsiveContainer width="100%" height={400}>
@@ -266,25 +279,22 @@ const ForeChart: React.FC<ForeChartProps> = ({
                     data={{
                         datasets: [
                             {
-                                label: 'SHAP Point',
-                                data: futureDataEx.globalShapValues[0].map((val, index) => ({
-                                    x: index + 1,
-                                    y: val + (Math.random() - 0.5) * 0.2 // random offset
-                                })),
+                                label: 'All SHAP Points',
+                                data: flattenedShapData || [],
                                 backgroundColor: 'rgba(53, 162, 235, 0.7)'
                             }
                         ]
                     }}
                     options={{
+                        indexAxis: 'y',
                         scales: {
                             x: {
-                                title: { display: true, text: 'Days Before' },
-                                ticks: {
-                                    callback: (value) => `${value} ${value === 1 ? 'day' : 'days'}`
-                                }
+                                title: { display: true, text: 'SHAP Value' }
                             },
                             y: {
-                                title: { display: true, text: 'SHAP Value' }
+                                title: { display: true, text: 'Days' },
+                                // For better readability, place zero at the first day
+                                ticks: { stepSize: 1 }
                             }
                         },
                         plugins: {
