@@ -146,11 +146,11 @@ const ForeChart: React.FC<ForeChartProps> = ({
     // Initialize flattenedShapData to an empty array before checking globalShapValues.
     var flattenedShapData: { x: number; y: number }[] = [];
     if (futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0) {
-        // For each row (feature), loop over each column (day)
-        flattenedShapData = futureDataEx.globalShapValues.flatMap((featureRow, rowIndex) =>
+        const totalCols = futureDataEx.globalShapValues[0].length; 
+        flattenedShapData = futureDataEx.globalShapValues.flatMap((featureRow) =>
             featureRow.map((shapVal, colIndex) => ({
                 x: shapVal,
-                y: colIndex
+                y: totalCols - colIndex
             }))
         );
     }
@@ -272,9 +272,9 @@ const ForeChart: React.FC<ForeChartProps> = ({
                 </div>
             </div>}
         {/* SHAP Values */}
-        {futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">SHAP Values (Bee Swarm)</h3>
+        {selectedPoint !== null && futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
+            <div className="mt-4 text-gray-800">
+                <h3 className="text-lg font-semibold mb-2">SHAP Values (Bee Swarm)</h3>
                 <ChartJSScatter
                     data={{
                         datasets: [
@@ -288,21 +288,12 @@ const ForeChart: React.FC<ForeChartProps> = ({
                     options={{
                         indexAxis: 'y',
                         scales: {
-                            x: {
-                                title: { display: true, text: 'SHAP Value' }
-                            },
-                            y: {
-                                title: { display: true, text: 'Days' },
-                                // For better readability, place zero at the first day
-                                ticks: { stepSize: 1 }
-                            }
+                            x: { title: { display: true, text: 'SHAP Value' } },
+                            y: { title: { display: true, text: 'Days' }, ticks: { stepSize: 1 } }
                         },
                         plugins: {
                             legend: { display: false },
-                            title: {
-                                display: true,
-                                text: 'Bee Swarm of SHAP Values'
-                            }
+                            title: { display: true, text: 'Bee Swarm of SHAP Values' }
                         }
                     }}
                 />
