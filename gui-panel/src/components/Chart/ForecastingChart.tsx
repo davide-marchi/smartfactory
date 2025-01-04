@@ -288,8 +288,8 @@ const ForeChart: React.FC<ForeChartProps> = ({
                     options={{
                         indexAxis: 'y',
                         scales: {
-                            x: { title: { display: true, text: 'SHAP Value' } },
-                            y: { title: { display: true, text: 'Days' }, ticks: { stepSize: 1 } }
+                            x: { title: { display: true, text: 'SHAP Value (Impact)' } },
+                            y: { title: { display: true, text: 'Days before prediction' }, ticks: { stepSize: 1 } }
                         },
                         plugins: {
                             legend: { display: false },
