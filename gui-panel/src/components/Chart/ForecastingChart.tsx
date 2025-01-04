@@ -14,6 +14,30 @@ import {
 } from "recharts";
 import {ForecastDataEx, KPI} from "../../api/DataStructures";
 import {COLORS, formatTimeFrame} from "../../utils/chartUtil";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip as ChartTooltip,
+    Legend as ChartLegend,
+    BarElement,
+    ChartOptions,
+} from 'chart.js';
+import { Line as ChartJSLine, Bar as ChartJSBar } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    ChartTooltip,
+    ChartLegend
+);
 
 const ForecastTooltip = ({active, payload, label, kpi}: any) => {
     if (active && payload && payload.length) {
@@ -234,6 +258,43 @@ const ForeChart: React.FC<ForeChartProps> = ({
                         confidence. </p>
                 </div>
             </div>}
+        {/* SHAP Values */}
+        {futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">SHAP Values Summary</h3>
+                <ChartJSBar
+                    data={{
+                        labels: futureDataEx.globalShapValues[0].map((_, index) => 
+                            `${index + 1} ${index === 0 ? 'day' : 'days'} before`
+                        ),
+                        datasets: [{
+                            label: 'SHAP Values',
+                            data: futureDataEx.globalShapValues[0],
+                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                            borderColor: 'rgb(53, 162, 235)',
+                            borderWidth: 1
+                        }]
+                    }}
+                    options={{
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Feature Impact on Predictions (SHAP Values)'
+                            }
+                        }
+                    }}
+                />
+                <span className="text-sm text-gray-600 mt-2 block">
+                    This graph shows the global impact of historical values on the predictions.<br/>
+                    Larger values indicate stronger influence on the model's predictions.
+                </span>
+            </div>
+        )}
     </div>;
 };
 

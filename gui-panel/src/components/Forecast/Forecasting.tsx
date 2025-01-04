@@ -48,6 +48,7 @@ const ForecastingPage: React.FC = () => {
                     );
                 });
                 console.log("Future data received for the next %s days: ", numberOfDays, futureData);
+                console.log("Global SHAP values:", futureData.globalShapValues); // Add this line
                 setForecastData({past: pastData, future: futureData});
             } catch (error) {
                 console.error('Failed to fetch forecast data:', error);
