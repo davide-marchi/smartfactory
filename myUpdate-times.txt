@@ -9,6 +9,21 @@ After:
     Bootstrapping-SHAP: 0.17 seconds
     Residuals-SHAP:     0.15 seconds
 
+###########################################################
+
+Sequence lenght:    15
+predictions:        30
+
+Before:
+    Bootstrapping-LIME: 2.93 seconds
+    Residuals-LIME:     2.85 seconds
+
+After:
+    Bootstrapping-SHAP: 0.16 seconds
+    Residuals-SHAP:     0.14 seconds
+
+###########################################################
+
 On website:
     Bootstrapping-LIME: 4.60 seconds
     Residuals-LIME:     4.42 seconds
