@@ -26,7 +26,7 @@ import {
     BarElement,
     ChartOptions,
 } from 'chart.js';
-import { Line as ChartJSLine, Bar as ChartJSBar } from 'react-chartjs-2';
+import { Line as ChartJSLine, Bar as ChartJSBar, Scatter as ChartJSScatter } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
@@ -261,37 +261,44 @@ const ForeChart: React.FC<ForeChartProps> = ({
         {/* SHAP Values */}
         {futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">SHAP Values Summary</h3>
-                <ChartJSBar
+                <h3 className="text-lg font-semibold mb-4">SHAP Values (Bee Swarm)</h3>
+                <ChartJSScatter
                     data={{
-                        labels: futureDataEx.globalShapValues[0].map((_, index) => 
-                            `${index + 1} ${index === 0 ? 'day' : 'days'} before`
-                        ),
-                        datasets: [{
-                            label: 'SHAP Values',
-                            data: futureDataEx.globalShapValues[0],
-                            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                            borderColor: 'rgb(53, 162, 235)',
-                            borderWidth: 1
-                        }]
+                        datasets: [
+                            {
+                                label: 'SHAP Point',
+                                data: futureDataEx.globalShapValues[0].map((val, index) => ({
+                                    x: index + 1,
+                                    y: val + (Math.random() - 0.5) * 0.2 // random offset
+                                })),
+                                backgroundColor: 'rgba(53, 162, 235, 0.7)'
+                            }
+                        ]
                     }}
                     options={{
-                        indexAxis: 'y',
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Days Before' },
+                                ticks: {
+                                    callback: (value) => `${value} ${value === 1 ? 'day' : 'days'}`
+                                }
                             },
+                            y: {
+                                title: { display: true, text: 'SHAP Value' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
                             title: {
                                 display: true,
-                                text: 'Feature Impact on Predictions (SHAP Values)'
+                                text: 'Bee Swarm of SHAP Values'
                             }
                         }
                     }}
                 />
                 <span className="text-sm text-gray-600 mt-2 block">
-                    This graph shows the global impact of historical values on the predictions.<br/>
-                    Larger values indicate stronger influence on the model's predictions.
+                    Each point represents a single SHAP value.<br/>
+                    Slight offsets are applied to avoid point overlap.
                 </span>
             </div>
         )}
