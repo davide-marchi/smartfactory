@@ -27,4 +27,11 @@ After:
 On website:
     Bootstrapping-LIME: 4.60 seconds
     Residuals-LIME:     4.42 seconds
+    Bootstrapping-SHAP: 0.82 seconds
     Residuals-SHAP:     0.76 seconds
+
+Local case:
+    Reduction time of:  94.54 %
+
+Website case:
+    Reduction time of:  82.17 %
