@@ -256,9 +256,8 @@ const ForeChart: React.FC<ForeChartProps> = ({
                     </BarChart>
                 </ResponsiveContainer>
                 <span className="text-sm text-gray-600">
-                    This graph shows how the values from specific dates affected the prediction.<br/>
-                    Bars to the right helped increase it, while bars to the left lowered it.<br/>
-                    Longer bars mean a bigger impact.
+                This graph shows how specific dates impacted this particular prediction.<br/>
+                Bars to the right increased it, while bars to the left reduced it. Longer bars mean a bigger impact.
                 </span>
             </div>
             :
@@ -274,32 +273,32 @@ const ForeChart: React.FC<ForeChartProps> = ({
         {/* SHAP Values */}
         {selectedPoint !== null && futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
             <div className="mt-4 text-gray-800">
-                <h3 className="text-lg font-semibold mb-2">SHAP Values (Bee Swarm)</h3>
+                <h3 className="text-lg font-semibold mb-2">Model explanation</h3>
                 <ChartJSScatter
                     data={{
                         datasets: [
                             {
                                 label: 'All SHAP Points',
                                 data: flattenedShapData || [],
-                                backgroundColor: 'rgba(53, 162, 235, 0.7)'
+                                backgroundColor: COLORS[0]
                             }
                         ]
                     }}
                     options={{
                         indexAxis: 'y',
                         scales: {
-                            x: { title: { display: true, text: 'SHAP Value (Impact)' } },
+                            /*x: { title: { display: true, text: 'SHAP Value (Impact)' } },*/
                             y: { title: { display: true, text: 'Days before prediction' }, ticks: { stepSize: 1 } }
                         },
                         plugins: {
-                            legend: { display: false },
-                            title: { display: true, text: 'Bee Swarm of SHAP Values' }
+                            legend: { display: false }
+                            /*title: { display: true, text: 'Bee Swarm of SHAP Values' }*/
                         }
                     }}
                 />
                 <span className="text-sm text-gray-600 mt-2 block">
-                    Each point represents a single SHAP value.<br/>
-                    Slight offsets are applied to avoid point overlap.
+                This chart illustrates the overall behavior of the model, showing how different days generally affect predictions.<br/>
+                Spread-out dots indicate significant impact, while dots near zero show minimal effect.
                 </span>
             </div>
         )}
