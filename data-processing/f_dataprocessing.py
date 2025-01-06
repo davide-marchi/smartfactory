@@ -595,7 +595,7 @@ def XAI_PRED(data,Last_date, model, total_points, seq_length = 10, n_predictions
       model=model,
       training_data=X_train,
       training_outputs=y_train,
-      use_residuals=True
+      use_residuals=False
     )
 
   # Perform autoregressive predictions

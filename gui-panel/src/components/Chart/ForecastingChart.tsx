@@ -14,6 +14,30 @@ import {
 } from "recharts";
 import {ForecastDataEx, KPI} from "../../api/DataStructures";
 import {COLORS, formatTimeFrame} from "../../utils/chartUtil";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip as ChartTooltip,
+    Legend as ChartLegend,
+    BarElement,
+    ChartOptions,
+} from 'chart.js';
+import { Line as ChartJSLine, Bar as ChartJSBar, Scatter as ChartJSScatter } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    ChartTooltip,
+    ChartLegend
+);
 
 const ForecastTooltip = ({active, payload, label, kpi}: any) => {
     if (active && payload && payload.length) {
@@ -118,6 +142,19 @@ const ForeChart: React.FC<ForeChartProps> = ({
         numericTimestamp: new Date(d.timestamp).getTime(),
     }));
     console.log("Data:", data);
+
+    // Initialize flattenedShapData to an empty array before checking globalShapValues.
+    var flattenedShapData: { x: number; y: number }[] = [];
+    if (futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0) {
+        const totalCols = futureDataEx.globalShapValues[0].length; 
+        flattenedShapData = futureDataEx.globalShapValues.flatMap((featureRow) =>
+            featureRow.map((shapVal, colIndex) => ({
+                x: shapVal,
+                y: totalCols - colIndex
+            }))
+        );
+    }
+
     return <div>
         {/* Forecasting Chart */}
         <ResponsiveContainer width="100%" height={400}>
@@ -219,9 +256,8 @@ const ForeChart: React.FC<ForeChartProps> = ({
                     </BarChart>
                 </ResponsiveContainer>
                 <span className="text-sm text-gray-600">
-                    This graph shows how the values from specific dates affected the prediction.<br/>
-                    Bars to the right helped increase it, while bars to the left lowered it.<br/>
-                    Longer bars mean a bigger impact.
+                This graph shows how specific dates impacted this particular prediction.<br/>
+                Bars to the right increased it, while bars to the left reduced it. Longer bars mean a bigger impact.
                 </span>
             </div>
             :
@@ -234,6 +270,38 @@ const ForeChart: React.FC<ForeChartProps> = ({
                         confidence. </p>
                 </div>
             </div>}
+        {/* SHAP Values */}
+        {selectedPoint !== null && futureDataEx.globalShapValues && futureDataEx.globalShapValues.length > 0 && (
+            <div className="mt-4 text-gray-800">
+                <h3 className="text-lg font-semibold mb-2">Model explanation</h3>
+                <ChartJSScatter
+                    data={{
+                        datasets: [
+                            {
+                                label: 'All SHAP Points',
+                                data: flattenedShapData || [],
+                                backgroundColor: COLORS[0]
+                            }
+                        ]
+                    }}
+                    options={{
+                        indexAxis: 'y',
+                        scales: {
+                            /*x: { title: { display: true, text: 'SHAP Value (Impact)' } },*/
+                            y: { title: { display: true, text: 'Days before prediction' }, ticks: { stepSize: 1 } }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                            /*title: { display: true, text: 'Bee Swarm of SHAP Values' }*/
+                        }
+                    }}
+                />
+                <span className="text-sm text-gray-600 mt-2 block">
+                This chart illustrates the overall behavior of the model, showing how different days generally affect predictions.<br/>
+                Spread-out dots indicate significant impact, while dots near zero show minimal effect.
+                </span>
+            </div>
+        )}
     </div>;
 };
 

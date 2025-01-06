@@ -408,7 +408,7 @@ def main():
 
     # Generate a sine wave
     total_points = 300
-    seq_length = 9
+    seq_length = 15
     t = np.linspace(0, 10 * np.pi, total_points)
     data = np.sin(t) + np.random.normal(0, 0.05, size=total_points)
 
