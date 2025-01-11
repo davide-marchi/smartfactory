@@ -25,9 +25,9 @@ FORMAT FOR CONTEXT:
    - Machine_Name: Name of the machine for which the KPI prediction is reported.  
    - KPI_Name: Unique identifier for the forecasted KPI.  
    - Predicted_value: Forecasted KPI value or a list of value if forecasting refers to more then one day
-   - Lower_bound: Minimum predicted value within the confidence interval for the KPI.
-   - Upper_bound: Maximum predicted value within the confidence interval for the KPI.
-   - Confidence_score: Numerical value (0-1) indicating the confidence level of the prediction (e.g., 0.95 for 95% confidence).
+   - Lower_bound: The lower limit of the prediction, indicating the value below which the actual KPI is unlikely to fall.
+   - Upper_bound: The upper limit of the prediction, indicating the value above which the actual KPI is unlikely to rise.
+   - Confidence_score: Numerical value (0-1) indicating the probability that the actual KPI value falls within the Lower_bound and Upper_bound (e.g., 0.95 for 95% confidence).
    - Measure_unit: Unit of measurement for the KPI (e.g., percentage, seconds, units).  
    - Date_prediction: Date of the KPI prediction (DD/MM/YYYY) or a list of date if forecasting refers to more then one day.  
    - Forecast: Always true for forecasted KPIs.  
